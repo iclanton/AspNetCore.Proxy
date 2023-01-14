@@ -52,7 +52,19 @@ namespace AspNetCore.Proxy
     internal static class Helpers
     {
         internal static readonly string HttpProxyClientName = "AspNetCore.Proxy.HttpProxyClient";
-        internal static readonly string[] WebSocketNotForwardedHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Accept", "Sec-WebSocket-Protocol", "Sec-WebSocket-Key", "Sec-WebSocket-Version", "Sec-WebSocket-Extensions" };
+        internal static readonly string[] WebSocketNotForwardedHeaders = new[] {
+            "Connection",
+            "Host",
+            "Upgrade",
+            "Sec-WebSocket-Accept",
+            "Sec-WebSocket-Protocol",
+            "Sec-WebSocket-Key",
+            "Sec-WebSocket-Version",
+            "Sec-WebSocket-Extensions",
+            "X-Forwarded-For",
+            "X-Forwarded-Host",
+            "X-Forwarded-Server"
+        };
 
         internal static string TrimTrailingSlashes(this string s)
         {
