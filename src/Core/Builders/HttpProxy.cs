@@ -56,9 +56,7 @@ namespace AspNetCore.Proxy.Builders
 
         private IHttpProxyOptionsBuilder _optionsBuilder;
 
-        private HttpProxyBuilder()
-        {
-        }
+        private HttpProxyBuilder() { }
 
         /// <summary>
         /// Gets a `new`, empty instance of this type.
@@ -69,27 +67,27 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public IHttpProxyBuilder New()
         {
-            return Instance
-                .WithEndpoint(_endpointComputer)
-                .WithOptions(_optionsBuilder?.New());
+            return Instance.WithEndpoint(_endpointComputer).WithOptions(_optionsBuilder?.New());
         }
 
         /// <inheritdoc/>
         public HttpProxy Build()
         {
-            if(_endpointComputer == null)
+            if (_endpointComputer == null)
                 throw new Exception("The endpoint must be specified on this HTTP proxy builder.");
 
-            return new HttpProxy(
-                _endpointComputer,
-                _optionsBuilder?.Build());
+            return new HttpProxy(_endpointComputer, _optionsBuilder?.Build());
         }
 
         /// <inheritdoc/>
-        public IHttpProxyBuilder WithEndpoint(string endpoint) => this.WithEndpoint((context, args) => new ValueTask<string>(endpoint));
+        public IHttpProxyBuilder WithEndpoint(string endpoint) =>
+            this.WithEndpoint((context, args) => new ValueTask<string>(endpoint));
 
         /// <inheritdoc/>
-        public IHttpProxyBuilder WithEndpoint(EndpointComputerToString endpointComputer) => this.WithEndpoint((context, args) => new ValueTask<string>(endpointComputer(context, args)));
+        public IHttpProxyBuilder WithEndpoint(EndpointComputerToString endpointComputer) =>
+            this.WithEndpoint(
+                (context, args) => new ValueTask<string>(endpointComputer(context, args))
+            );
 
         /// <inheritdoc/>
         public IHttpProxyBuilder WithEndpoint(EndpointComputerToValueTask endpointComputer)

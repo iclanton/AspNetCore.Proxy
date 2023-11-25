@@ -27,7 +27,11 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public async Task CanProxyControllerPostRequest()
         {
-            var content = new StringContent("{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}", Encoding.UTF8, "application/json");
+            var content = new StringContent(
+                "{\"title\": \"foo\", \"body\": \"bar\", \"userId\": 1}",
+                Encoding.UTF8,
+                "application/json"
+            );
             var response = await _client.PostAsync("api/posts", content);
             response.EnsureSuccessStatusCode();
 
@@ -50,13 +54,18 @@ namespace AspNetCore.Proxy.Tests
             var responseString = await response.Content.ReadAsStringAsync();
             Assert.Equal(content, JObject.Parse(responseString).Value<string>("data"));
             Assert.Equal(contentType, JObject.Parse(responseString)["headers"]["content-type"]);
-            Assert.Equal(content.Length, JObject.Parse(responseString)["headers"]["content-length"]);
+            Assert.Equal(
+                content.Length,
+                JObject.Parse(responseString)["headers"]["content-length"]
+            );
         }
 
         [Fact]
         public async Task CanProxyControllerPostWithFormRequest()
         {
-            var content = new FormUrlEncodedContent(new Dictionary<string, string> { { "xyz", "123" }, { "abc", "321" } });
+            var content = new FormUrlEncodedContent(
+                new Dictionary<string, string> { { "xyz", "123" }, { "abc", "321" } }
+            );
             var response = await _client.PostAsync("api/posts", content);
             response.EnsureSuccessStatusCode();
 
@@ -77,7 +86,9 @@ namespace AspNetCore.Proxy.Tests
             content.Add(new StringContent("321"), "abc");
             const string fileName = "Test こんにちは file.txt";
             const string fileString = "This is a test file こんにちは with non-ascii content.";
-            var fileContent = new StreamContent(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(fileString)));
+            var fileContent = new StreamContent(
+                new System.IO.MemoryStream(Encoding.UTF8.GetBytes(fileString))
+            );
             content.Add(fileContent, "testFile", fileName);
 
             var response = await _client.PostAsync("api/multipart", content);
@@ -96,14 +107,19 @@ namespace AspNetCore.Proxy.Tests
             var files = Assert.IsAssignableFrom<JObject>(json["files"]);
             Assert.Single(files);
             var file = files.ToObject<Dictionary<string, string>>().Single();
-            Assert.Equal($"data:application/octet-stream;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(fileString))}", file.Value);
+            Assert.Equal(
+                $"data:application/octet-stream;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(fileString))}",
+                file.Value
+            );
             Assert.Equal(fileName, file.Key);
         }
 
         [Fact]
         public async Task CanProxyControllerCatchAllPostWithFormRequest()
         {
-            var content = new FormUrlEncodedContent(new Dictionary<string, string> { { "xyz", "123" }, { "abc", "321" } });
+            var content = new FormUrlEncodedContent(
+                new Dictionary<string, string> { { "xyz", "123" }, { "abc", "321" } }
+            );
             var response = await _client.PostAsync("api/catchall/posts", content);
             response.EnsureSuccessStatusCode();
 
@@ -122,7 +138,10 @@ namespace AspNetCore.Proxy.Tests
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("sunt aut facere repellat provident occaecati excepturi optio reprehenderit", JObject.Parse(responseString).Value<string>("title"));
+            Assert.Contains(
+                "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                JObject.Parse(responseString).Value<string>("title")
+            );
         }
 
         [Fact]
@@ -132,7 +151,10 @@ namespace AspNetCore.Proxy.Tests
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("id labore ex et quam laborum", JObject.Parse(responseString).Value<string>("name"));
+            Assert.Contains(
+                "id labore ex et quam laborum",
+                JObject.Parse(responseString).Value<string>("name")
+            );
         }
 
         [Fact]
@@ -142,7 +164,10 @@ namespace AspNetCore.Proxy.Tests
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("id labore ex et quam laborum", JObject.Parse(responseString).Value<string>("name"));
+            Assert.Contains(
+                "id labore ex et quam laborum",
+                JObject.Parse(responseString).Value<string>("name")
+            );
         }
 
         [Fact]
@@ -152,7 +177,10 @@ namespace AspNetCore.Proxy.Tests
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("sunt aut facere repellat provident occaecati excepturi optio reprehenderit", JObject.Parse(responseString).Value<string>("title"));
+            Assert.Contains(
+                "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                JObject.Parse(responseString).Value<string>("title")
+            );
         }
 
         [Fact]
@@ -171,7 +199,10 @@ namespace AspNetCore.Proxy.Tests
             var response = await _client.GetAsync("api/controller/customresponse/1");
             response.EnsureSuccessStatusCode();
 
-            Assert.Equal("It's all greek...er, Latin...to me!", await response.Content.ReadAsStringAsync());
+            Assert.Equal(
+                "It's all greek...er, Latin...to me!",
+                await response.Content.ReadAsStringAsync()
+            );
         }
 
         [Fact]
@@ -180,7 +211,10 @@ namespace AspNetCore.Proxy.Tests
             var response = await _client.GetAsync("api/controller/badresponse/1");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 
-            Assert.Equal("I tried to proxy, but I chose a bad address, and it is not found.", await response.Content.ReadAsStringAsync());
+            Assert.Equal(
+                "I tried to proxy, but I chose a bad address, and it is not found.",
+                await response.Content.ReadAsStringAsync()
+            );
         }
 
         [Fact]
@@ -203,13 +237,18 @@ namespace AspNetCore.Proxy.Tests
         {
             var response = await _client.GetAsync("api/controller/intercept/1");
             response.EnsureSuccessStatusCode();
-            Assert.Equal("This was intercepted and not proxied!", await response.Content.ReadAsStringAsync());
+            Assert.Equal(
+                "This was intercepted and not proxied!",
+                await response.Content.ReadAsStringAsync()
+            );
         }
 
         [Fact]
         public async Task CanProxyConcurrentCalls()
         {
-            var calls = Enumerable.Range(1, 100).Select(i => _client.GetAsync($"api/controller/posts/{i}"));
+            var calls = Enumerable
+                .Range(1, 100)
+                .Select(i => _client.GetAsync($"api/controller/posts/{i}"));
 
             Assert.True((await Task.WhenAll(calls)).All(r => r.IsSuccessStatusCode));
         }
@@ -229,7 +268,10 @@ namespace AspNetCore.Proxy.Tests
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("sunt aut facere repellat provident occaecati excepturi optio reprehenderit", JObject.Parse(responseString).Value<string>("title"));
+            Assert.Contains(
+                "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+                JObject.Parse(responseString).Value<string>("title")
+            );
         }
     }
 }

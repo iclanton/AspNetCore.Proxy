@@ -1,4 +1,3 @@
-
 using System;
 using Microsoft.AspNetCore.Http;
 using Moq;
@@ -15,7 +14,8 @@ namespace AspNetCore.Proxy.Tests
             var request = Mock.Of<HttpRequest>();
             request.ContentType = contentType;
 
-            var e = Assert.ThrowsAny<Exception>(() => {
+            var e = Assert.ThrowsAny<Exception>(() =>
+            {
                 var dummy = Helpers.ToHttpContent(null, request);
             });
 

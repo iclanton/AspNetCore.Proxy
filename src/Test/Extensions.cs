@@ -19,10 +19,17 @@ namespace AspNetCore.Proxy.Tests
 
         internal static Task SendShortMessageAsync(this WebSocket socket, string message)
         {
-            if(message.Length > BUFFER_SIZE / 8)
-                throw new InvalidOperationException($"Must send a short message (less than {BUFFER_SIZE / 8} characters).");
+            if (message.Length > BUFFER_SIZE / 8)
+                throw new InvalidOperationException(
+                    $"Must send a short message (less than {BUFFER_SIZE / 8} characters)."
+                );
 
-            return socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
+            return socket.SendAsync(
+                new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+            );
         }
 
         internal static async Task<string> ReceiveShortMessageAsync(this WebSocket socket)
@@ -30,15 +37,22 @@ namespace AspNetCore.Proxy.Tests
             var buffer = new byte[BUFFER_SIZE];
             var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
 
-            if(!result.EndOfMessage)
-                throw new InvalidOperationException($"Must send a short message (less than {BUFFER_SIZE / 8} characters).");
+            if (!result.EndOfMessage)
+                throw new InvalidOperationException(
+                    $"Must send a short message (less than {BUFFER_SIZE / 8} characters)."
+                );
 
             return Encoding.UTF8.GetString(buffer, 0, result.Count);
         }
 
         internal static Task SendMessageAsync(this WebSocket socket, string message)
         {
-            return socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
+            return socket.SendAsync(
+                new ArraySegment<byte>(Encoding.UTF8.GetBytes(message)),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+            );
         }
 
         internal static async Task<string> ReceiveMessageAsync(this WebSocket socket)
@@ -51,8 +65,7 @@ namespace AspNetCore.Proxy.Tests
             {
                 result = await socket.ReceiveAsync(buffer, CancellationToken.None);
                 ms.Write(buffer.Array!, buffer.Offset, result.Count);
-            }
-            while (!result.EndOfMessage);
+            } while (!result.EndOfMessage);
 
             ms.Seek(0, SeekOrigin.Begin);
 
@@ -64,17 +77,21 @@ namespace AspNetCore.Proxy.Tests
         {
             var socket = await context.WebSockets.AcceptWebSocketAsync(SupportedProtocol);
 
-            while(true)
+            while (true)
             {
                 var message = await socket.ReceiveMessageAsync();
 
-                if(message == CloseMessage)
+                if (message == CloseMessage)
                 {
-                    await socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, CloseDescription, context.RequestAborted);
+                    await socket.CloseOutputAsync(
+                        WebSocketCloseStatus.NormalClosure,
+                        CloseDescription,
+                        context.RequestAborted
+                    );
                     break;
                 }
 
-                if(message == KillMessage)
+                if (message == KillMessage)
                 {
                     throw new Exception();
                 }

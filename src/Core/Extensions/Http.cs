@@ -12,53 +12,76 @@ namespace AspNetCore.Proxy
 {
     internal static class HttpExtensions
     {
-        internal static async Task ExecuteHttpProxyOperationAsync(this HttpContext context, HttpProxy httpProxy)
+        internal static async Task ExecuteHttpProxyOperationAsync(
+            this HttpContext context,
+            HttpProxy httpProxy
+        )
         {
-            var uri = await context.GetEndpointFromComputerAsync(httpProxy.EndpointComputer).ConfigureAwait(false);
+            var uri = await context
+                .GetEndpointFromComputerAsync(httpProxy.EndpointComputer)
+                .ConfigureAwait(false);
             var options = httpProxy.Options;
 
             try
             {
-                var httpClient = context.RequestServices
+                var httpClient = context
+                    .RequestServices
                     .GetService<IHttpClientFactory>()
                     .CreateClient(options?.HttpClientName ?? Helpers.HttpProxyClientName);
 
                 // If `true`, this proxy call has been intercepted.
-                if(options?.Intercept != null && await options.Intercept(context).ConfigureAwait(false))
+                if (
+                    options?.Intercept != null
+                    && await options.Intercept(context).ConfigureAwait(false)
+                )
                     return;
 
-                if(context.WebSockets.IsWebSocketRequest)
-                    throw new InvalidOperationException("A WebSocket request cannot be routed as an HTTP proxy operation.");
+                if (context.WebSockets.IsWebSocketRequest)
+                    throw new InvalidOperationException(
+                        "A WebSocket request cannot be routed as an HTTP proxy operation."
+                    );
 
-                if(!uri.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                if (!uri.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                 {
-                    if(httpClient.BaseAddress != null)
+                    if (httpClient.BaseAddress != null)
                         uri = $"{httpClient.BaseAddress}{uri}";
                     else
-                        throw new InvalidOperationException("Only forwarded addresses starting with 'http://' or 'https://' are supported for HTTP requests.");
+                        throw new InvalidOperationException(
+                            "Only forwarded addresses starting with 'http://' or 'https://' are supported for HTTP requests."
+                        );
                 }
 
-                var proxiedRequest = context.CreateProxiedHttpRequest(uri, options?.ShouldAddForwardedHeaders ?? true);
+                var proxiedRequest = context.CreateProxiedHttpRequest(
+                    uri,
+                    options?.ShouldAddForwardedHeaders ?? true
+                );
 
-                if(options?.BeforeSend != null)
+                if (options?.BeforeSend != null)
                     await options.BeforeSend(context, proxiedRequest).ConfigureAwait(false);
                 var proxiedResponse = await context
                     .SendProxiedHttpRequestAsync(proxiedRequest, httpClient)
                     .ConfigureAwait(false);
 
-                if(options?.AfterReceive != null)
+                if (options?.AfterReceive != null)
                     await options.AfterReceive(context, proxiedResponse).ConfigureAwait(false);
                 await context.WriteProxiedHttpResponseAsync(proxiedResponse).ConfigureAwait(false);
             }
             catch (Exception e)
             {
-                if(!context.Response.HasStarted)
+                if (!context.Response.HasStarted)
                 {
                     if (options?.HandleFailure == null)
                     {
                         // If the failures are not caught, then write a generic response.
-                        context.Response.StatusCode = 502 /* BAD GATEWAY */;
-                        await context.Response.WriteAsync($"Request could not be proxied.\n\n{e.Message}\n\n{e.StackTrace}").ConfigureAwait(false);
+                        context.Response.StatusCode =
+                            502 /* BAD GATEWAY */
+                        ;
+                        await context
+                            .Response
+                            .WriteAsync(
+                                $"Request could not be proxied.\n\n{e.Message}\n\n{e.StackTrace}"
+                            )
+                            .ConfigureAwait(false);
                         return;
                     }
 
@@ -67,7 +90,11 @@ namespace AspNetCore.Proxy
             }
         }
 
-        private static HttpRequestMessage CreateProxiedHttpRequest(this HttpContext context, string uriString, bool shouldAddForwardedHeaders)
+        private static HttpRequestMessage CreateProxiedHttpRequest(
+            this HttpContext context,
+            string uriString,
+            bool shouldAddForwardedHeaders
+        )
         {
             var uri = new Uri(uriString);
             var request = context.Request;
@@ -77,10 +104,12 @@ namespace AspNetCore.Proxy
             var usesStreamContent = true; // When using other content types, they specify the Content-Type header, and may also change the Content-Length.
 
             // Write to request content, when necessary.
-            if (!HttpMethods.IsGet(requestMethod) &&
-                !HttpMethods.IsHead(requestMethod) &&
-                !HttpMethods.IsDelete(requestMethod) &&
-                !HttpMethods.IsTrace(requestMethod))
+            if (
+                !HttpMethods.IsGet(requestMethod)
+                && !HttpMethods.IsHead(requestMethod)
+                && !HttpMethods.IsDelete(requestMethod)
+                && !HttpMethods.IsTrace(requestMethod)
+            )
             {
                 if (request.HasFormContentType)
                 {
@@ -96,14 +125,27 @@ namespace AspNetCore.Proxy
             // Copy the request headers.
             foreach (var header in request.Headers)
             {
-                if (!usesStreamContent && (header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase) || header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase)))
+                if (
+                    !usesStreamContent
+                    && (
+                        header.Key.Equals("Content-Type", StringComparison.OrdinalIgnoreCase)
+                        || header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase)
+                    )
+                )
                     continue;
-                if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
-                    requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+                if (
+                    !requestMessage
+                        .Headers
+                        .TryAddWithoutValidation(header.Key, header.Value.ToArray())
+                )
+                    requestMessage
+                        .Content
+                        ?.Headers
+                        .TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
 
             // Add forwarded headers.
-            if(shouldAddForwardedHeaders)
+            if (shouldAddForwardedHeaders)
                 AddForwardedHeadersToHttpRequest(context, requestMessage);
 
             // Set destination and method.
@@ -114,12 +156,23 @@ namespace AspNetCore.Proxy
             return requestMessage;
         }
 
-        private static Task<HttpResponseMessage> SendProxiedHttpRequestAsync(this HttpContext context, HttpRequestMessage message, HttpClient httpClient)
+        private static Task<HttpResponseMessage> SendProxiedHttpRequestAsync(
+            this HttpContext context,
+            HttpRequestMessage message,
+            HttpClient httpClient
+        )
         {
-            return httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+            return httpClient.SendAsync(
+                message,
+                HttpCompletionOption.ResponseHeadersRead,
+                context.RequestAborted
+            );
         }
 
-        private static Task WriteProxiedHttpResponseAsync(this HttpContext context, HttpResponseMessage responseMessage)
+        private static Task WriteProxiedHttpResponseAsync(
+            this HttpContext context,
+            HttpResponseMessage responseMessage
+        )
         {
             var response = context.Response;
 
@@ -139,7 +192,10 @@ namespace AspNetCore.Proxy
             return responseMessage.Content.CopyToAsync(response.Body);
         }
 
-        private static void AddForwardedHeadersToHttpRequest(HttpContext context, HttpRequestMessage requestMessage)
+        private static void AddForwardedHeadersToHttpRequest(
+            HttpContext context,
+            HttpRequestMessage requestMessage
+        )
         {
             var request = context.Request;
             var connection = context.Connection;
@@ -148,12 +204,14 @@ namespace AspNetCore.Proxy
             var protocol = request.Scheme;
 
             var localIp = connection.LocalIpAddress?.ToString();
-            var isLocalIpV6 = connection.LocalIpAddress?.AddressFamily == AddressFamily.InterNetworkV6;
+            var isLocalIpV6 =
+                connection.LocalIpAddress?.AddressFamily == AddressFamily.InterNetworkV6;
 
             var remoteIp = context.Connection.RemoteIpAddress?.ToString();
-            var isRemoteIpV6 = connection.RemoteIpAddress?.AddressFamily == AddressFamily.InterNetworkV6;
+            var isRemoteIpV6 =
+                connection.RemoteIpAddress?.AddressFamily == AddressFamily.InterNetworkV6;
 
-            if(remoteIp != null)
+            if (remoteIp != null)
                 requestMessage.Headers.TryAddWithoutValidation("X-Forwarded-For", remoteIp);
             requestMessage.Headers.TryAddWithoutValidation("X-Forwarded-Proto", protocol);
             requestMessage.Headers.TryAddWithoutValidation("X-Forwarded-Host", host);
@@ -161,17 +219,17 @@ namespace AspNetCore.Proxy
             // Fix IPv6 IPs for the `Forwarded` header.
             var forwardedHeader = new StringBuilder($"proto={protocol};host={host};");
 
-            if(localIp != null)
+            if (localIp != null)
             {
-                if(isLocalIpV6)
+                if (isLocalIpV6)
                     localIp = $"\"[{localIp}]\"";
 
                 forwardedHeader.Append("by=").Append(localIp).Append(';');
             }
 
-            if(remoteIp != null)
+            if (remoteIp != null)
             {
-                if(isRemoteIpV6)
+                if (isRemoteIpV6)
                     remoteIp = $"\"[{remoteIp}]\"";
 
                 forwardedHeader.Append("for=").Append(remoteIp).Append(';');

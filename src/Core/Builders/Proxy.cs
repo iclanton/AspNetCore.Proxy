@@ -25,7 +25,10 @@ namespace AspNetCore.Proxy.Builders
         /// <param name="endpoint">The endpoint to set.</param>
         /// <param name="builderAction">The options builder action to set.  This takes the form `(<see cref="IHttpProxyOptionsBuilder"/>) => void`.</param>
         /// <returns>The current instance with the specified proxy route set.</returns>
-        IProxyBuilder UseHttp(string endpoint, Action<IHttpProxyOptionsBuilder> builderAction = null);
+        IProxyBuilder UseHttp(
+            string endpoint,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        );
 
         /// <summary>
         /// Sets the HTTP proxy route on `this` instance that the proxy-to-build should use.
@@ -34,7 +37,10 @@ namespace AspNetCore.Proxy.Builders
         /// <param name="endpointComputer">The endpoint to set.  This takes the form `(<see cref="HttpContext"/>, <see cref="IDictionary{String, Object}"/>) => <see cref="String"/>`.</param>
         /// <param name="builderAction">The options builder action to set.  This takes the form `(<see cref="IHttpProxyOptionsBuilder"/>) => void`.</param>
         /// <returns>The current instance with the specified proxy route set.</returns>
-        IProxyBuilder UseHttp(EndpointComputerToString endpointComputer, Action<IHttpProxyOptionsBuilder> builderAction = null);
+        IProxyBuilder UseHttp(
+            EndpointComputerToString endpointComputer,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        );
 
         /// <summary>
         /// Sets the HTTP proxy route on `this` instance that the proxy-to-build should use.
@@ -43,7 +49,10 @@ namespace AspNetCore.Proxy.Builders
         /// <param name="endpointComputer">The endpoint to set.  This takes the form `(<see cref="HttpContext"/>, <see cref="IDictionary{String, Object}"/>) => <see cref="ValueTask{String}"/>`.</param>
         /// <param name="builderAction">The options builder action to set.  This takes the form `(<see cref="IHttpProxyOptionsBuilder"/>) => void`.</param>
         /// <returns>The current instance with the specified proxy route set.</returns>
-        IProxyBuilder UseHttp(EndpointComputerToValueTask endpointComputer, Action<IHttpProxyOptionsBuilder> builderAction = null);
+        IProxyBuilder UseHttp(
+            EndpointComputerToValueTask endpointComputer,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        );
 
         /// <summary>
         /// Sets the HTTP proxy route on `this` instance that the proxy-to-build should use.
@@ -77,7 +86,10 @@ namespace AspNetCore.Proxy.Builders
         /// <param name="endpointComputer">The endpoint to set.  This takes the form `(<see cref="HttpContext"/>, <see cref="IDictionary{String, Object}"/>) => <see cref="String"/>`.</param>
         /// <param name="builderAction">The options builder action to set.  This takes the form `(<see cref="IWsProxyOptionsBuilder"/>) => void`.</param>
         /// <returns>The current instance with the specified proxy route set.</returns>
-        IProxyBuilder UseWs(EndpointComputerToString endpointComputer, Action<IWsProxyOptionsBuilder> builderAction = null);
+        IProxyBuilder UseWs(
+            EndpointComputerToString endpointComputer,
+            Action<IWsProxyOptionsBuilder> builderAction = null
+        );
 
         /// <summary>
         /// Sets the WS proxy route on `this` instance that the proxy-to-build should use.
@@ -86,7 +98,10 @@ namespace AspNetCore.Proxy.Builders
         /// <param name="endpointComputer">The endpoint to set.  This takes the form `(<see cref="HttpContext"/>, <see cref="IDictionary{String, Object}"/>) => <see cref="ValueTask{String}"/>`.</param>
         /// <param name="builderAction">The options builder action to set.  This takes the form `(<see cref="IWsProxyOptionsBuilder"/>) => void`.</param>
         /// <returns>The current instance with the specified proxy route set.</returns>
-        IProxyBuilder UseWs(EndpointComputerToValueTask endpointComputer, Action<IWsProxyOptionsBuilder> builderAction = null);
+        IProxyBuilder UseWs(
+            EndpointComputerToValueTask endpointComputer,
+            Action<IWsProxyOptionsBuilder> builderAction = null
+        );
 
         /// <summary>
         /// Sets the WS proxy route on `this` instance that the proxy-to-build should use.
@@ -115,9 +130,7 @@ namespace AspNetCore.Proxy.Builders
         private IHttpProxyBuilder _httpProxyBuilder;
         private IWsProxyBuilder _wsProxyBuilder;
 
-        private ProxyBuilder()
-        {
-        }
+        private ProxyBuilder() { }
 
         /// <summary>
         /// Gets a `new`, empty instance of this type.
@@ -144,20 +157,21 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public Proxy Build()
         {
-            if(_httpProxyBuilder == null && _wsProxyBuilder == null)
-                throw new Exception($"At least one endpoint must be defined with `{nameof(UseHttp)}` or `{nameof(UseWs)}`.");
+            if (_httpProxyBuilder == null && _wsProxyBuilder == null)
+                throw new Exception(
+                    $"At least one endpoint must be defined with `{nameof(UseHttp)}` or `{nameof(UseWs)}`."
+                );
 
-            return new Proxy(
-                _route,
-                _httpProxyBuilder?.Build(),
-                _wsProxyBuilder?.Build());
+            return new Proxy(_route, _httpProxyBuilder?.Build(), _wsProxyBuilder?.Build());
         }
 
         /// <inheritdoc/>
         public IProxyBuilder WithRoute(string route)
         {
-            if(_isRouteless)
-                throw new Exception("This is a `routeless` Proxy builder (i.e., likely used with `RunProxy`): adding a route in this context is a no-op that should be removed.");
+            if (_isRouteless)
+                throw new Exception(
+                    "This is a `routeless` Proxy builder (i.e., likely used with `RunProxy`): adding a route in this context is a no-op that should be removed."
+                );
 
             _route = route;
 
@@ -165,13 +179,28 @@ namespace AspNetCore.Proxy.Builders
         }
 
         /// <inheritdoc/>
-        public IProxyBuilder UseHttp(string endpoint, Action<IHttpProxyOptionsBuilder> builderAction = null) => this.UseHttp(httpProxy => httpProxy.WithEndpoint(endpoint).WithOptions(builderAction));
+        public IProxyBuilder UseHttp(
+            string endpoint,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        ) => this.UseHttp(httpProxy => httpProxy.WithEndpoint(endpoint).WithOptions(builderAction));
 
         /// <inheritdoc/>
-        public IProxyBuilder UseHttp(EndpointComputerToString endpointComputer, Action<IHttpProxyOptionsBuilder> builderAction = null) => this.UseHttp(httpProxy => httpProxy.WithEndpoint(endpointComputer).WithOptions(builderAction));
+        public IProxyBuilder UseHttp(
+            EndpointComputerToString endpointComputer,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        ) =>
+            this.UseHttp(
+                httpProxy => httpProxy.WithEndpoint(endpointComputer).WithOptions(builderAction)
+            );
 
         /// <inheritdoc/>
-        public IProxyBuilder UseHttp(EndpointComputerToValueTask endpointComputer, Action<IHttpProxyOptionsBuilder> builderAction = null) => this.UseHttp(httpProxy => httpProxy.WithEndpoint(endpointComputer).WithOptions(builderAction));
+        public IProxyBuilder UseHttp(
+            EndpointComputerToValueTask endpointComputer,
+            Action<IHttpProxyOptionsBuilder> builderAction = null
+        ) =>
+            this.UseHttp(
+                httpProxy => httpProxy.WithEndpoint(endpointComputer).WithOptions(builderAction)
+            );
 
         /// <inheritdoc/>
         public IProxyBuilder UseHttp(Action<IHttpProxyBuilder> builderAction)
@@ -185,8 +214,10 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public IProxyBuilder UseHttp(IHttpProxyBuilder builder)
         {
-            if(_httpProxyBuilder != null)
-                throw new InvalidOperationException("Cannot set more than one HTTP proxy endpoint.");
+            if (_httpProxyBuilder != null)
+                throw new InvalidOperationException(
+                    "Cannot set more than one HTTP proxy endpoint."
+                );
 
             _httpProxyBuilder = builder;
 
@@ -194,13 +225,28 @@ namespace AspNetCore.Proxy.Builders
         }
 
         /// <inheritdoc/>
-        public IProxyBuilder UseWs(string endpoint, Action<IWsProxyOptionsBuilder> builderAction = null) => this.UseWs(wsProxy => wsProxy.WithEndpoint(endpoint).WithOptions(builderAction));
+        public IProxyBuilder UseWs(
+            string endpoint,
+            Action<IWsProxyOptionsBuilder> builderAction = null
+        ) => this.UseWs(wsProxy => wsProxy.WithEndpoint(endpoint).WithOptions(builderAction));
 
         /// <inheritdoc/>
-        public IProxyBuilder UseWs(EndpointComputerToString endpointComputer, Action<IWsProxyOptionsBuilder> builderAction = null) => this.UseWs(wsProxy => wsProxy.WithEndpoint(endpointComputer).WithOptions(builderAction));
+        public IProxyBuilder UseWs(
+            EndpointComputerToString endpointComputer,
+            Action<IWsProxyOptionsBuilder> builderAction = null
+        ) =>
+            this.UseWs(
+                wsProxy => wsProxy.WithEndpoint(endpointComputer).WithOptions(builderAction)
+            );
 
         /// <inheritdoc/>
-        public IProxyBuilder UseWs(EndpointComputerToValueTask endpointComputer, Action<IWsProxyOptionsBuilder> builderAction = null) => this.UseWs(wsProxy => wsProxy.WithEndpoint(endpointComputer).WithOptions(builderAction));
+        public IProxyBuilder UseWs(
+            EndpointComputerToValueTask endpointComputer,
+            Action<IWsProxyOptionsBuilder> builderAction = null
+        ) =>
+            this.UseWs(
+                wsProxy => wsProxy.WithEndpoint(endpointComputer).WithOptions(builderAction)
+            );
 
         /// <inheritdoc/>
         public IProxyBuilder UseWs(Action<IWsProxyBuilder> builderAction)
@@ -214,8 +260,10 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public IProxyBuilder UseWs(IWsProxyBuilder builder)
         {
-            if(_wsProxyBuilder != null)
-                throw new InvalidOperationException("Cannot set more than one WebSocket proxy endpoint.");
+            if (_wsProxyBuilder != null)
+                throw new InvalidOperationException(
+                    "Cannot set more than one WebSocket proxy endpoint."
+                );
 
             _wsProxyBuilder = builder;
 

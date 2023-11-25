@@ -14,17 +14,22 @@ namespace AspNetCore.Proxy.Tests
             const string endpoint = "any";
             const string clientName = "bogus";
 
-            var httpProxyOptions = HttpProxyOptionsBuilder.Instance.WithHttpClientName(clientName).New();
+            var httpProxyOptions = HttpProxyOptionsBuilder
+                .Instance
+                .WithHttpClientName(clientName)
+                .New();
 
             // Exercise methods by calling them multiple times.
-            var httpProxy = HttpProxyBuilder.Instance
+            var httpProxy = HttpProxyBuilder
+                .Instance
                 .New()
                 .WithEndpoint(endpoint)
                 .WithOptions(null as Action<IHttpProxyOptionsBuilder>)
                 .WithOptions(null as IHttpProxyOptionsBuilder)
                 .WithOptions(b => b.New())
                 .WithOptions(httpProxyOptions)
-                .New().Build();
+                .New()
+                .Build();
 
             Assert.Equal(endpoint, await httpProxy.EndpointComputer.Invoke(null, null));
             Assert.Equal(clientName, httpProxy.Options.HttpClientName);
@@ -33,7 +38,8 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public void CanHttpProxyBuilderFailOnNullEndpointComputer()
         {
-            Assert.ThrowsAny<Exception>(() => {
+            Assert.ThrowsAny<Exception>(() =>
+            {
                 var httpProxy = HttpProxyBuilder.Instance.Build();
             });
         }

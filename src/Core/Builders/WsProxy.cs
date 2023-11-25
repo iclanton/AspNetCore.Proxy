@@ -56,9 +56,7 @@ namespace AspNetCore.Proxy.Builders
 
         private IWsProxyOptionsBuilder _optionsBuilder;
 
-        private WsProxyBuilder()
-        {
-        }
+        private WsProxyBuilder() { }
 
         /// <summary>
         /// Gets a `new`, empty instance of this type.
@@ -69,27 +67,29 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public IWsProxyBuilder New()
         {
-            return Instance
-                .WithEndpoint(_endpointComputer)
-                .WithOptions(_optionsBuilder?.New());
+            return Instance.WithEndpoint(_endpointComputer).WithOptions(_optionsBuilder?.New());
         }
 
         /// <inheritdoc/>
         public WsProxy Build()
         {
-            if(_endpointComputer == null)
-                throw new Exception("The endpoint must be specified on this WebSocket proxy builder.");
+            if (_endpointComputer == null)
+                throw new Exception(
+                    "The endpoint must be specified on this WebSocket proxy builder."
+                );
 
-            return new WsProxy(
-                _endpointComputer,
-                _optionsBuilder?.Build());
+            return new WsProxy(_endpointComputer, _optionsBuilder?.Build());
         }
 
         /// <inheritdoc/>
-        public IWsProxyBuilder WithEndpoint(string endpoint) => this.WithEndpoint((context, args) => new ValueTask<string>(endpoint));
+        public IWsProxyBuilder WithEndpoint(string endpoint) =>
+            this.WithEndpoint((context, args) => new ValueTask<string>(endpoint));
 
         /// <inheritdoc/>
-        public IWsProxyBuilder WithEndpoint(EndpointComputerToString endpointComputer) => this.WithEndpoint((context, args) => new ValueTask<string>(endpointComputer(context, args)));
+        public IWsProxyBuilder WithEndpoint(EndpointComputerToString endpointComputer) =>
+            this.WithEndpoint(
+                (context, args) => new ValueTask<string>(endpointComputer(context, args))
+            );
 
         /// <inheritdoc/>
         public IWsProxyBuilder WithEndpoint(EndpointComputerToValueTask endpointComputer)

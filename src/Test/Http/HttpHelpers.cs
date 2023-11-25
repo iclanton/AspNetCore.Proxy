@@ -1,16 +1,20 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AspNetCore.Proxy.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using AspNetCore.Proxy.Options;
-using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Readability", "RCS1090", Justification = "Not a library, so no need for `ConfigureAwait`.")]
+[assembly: SuppressMessage(
+    "Readability",
+    "RCS1090",
+    Justification = "Not a library, so no need for `ConfigureAwait`."
+)]
 
 namespace AspNetCore.Proxy.Tests
 {
@@ -21,8 +25,14 @@ namespace AspNetCore.Proxy.Tests
             services.AddRouting();
             services.AddProxies();
             services.AddControllers();
-            services.AddHttpClient("TimeoutClient", c => c.Timeout = TimeSpan.FromMilliseconds(0.001));
-            services.AddHttpClient("BaseAddressClient", c => c.BaseAddress = new Uri("https://jsonplaceholder.typicode.com"));
+            services.AddHttpClient(
+                "TimeoutClient",
+                c => c.Timeout = TimeSpan.FromMilliseconds(0.001)
+            );
+            services.AddHttpClient(
+                "BaseAddressClient",
+                c => c.BaseAddress = new Uri("https://jsonplaceholder.typicode.com")
+            );
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -35,9 +45,25 @@ namespace AspNetCore.Proxy.Tests
             {
                 proxies.Map("echo/post", proxy => proxy.UseHttp("https://postman-echo.com/post"));
 
-                proxies.Map("api/comments/contextandargstotask/{postId}", proxy => proxy.UseHttp((_, args) => new ValueTask<string>($"https://jsonplaceholder.typicode.com/comments/{args["postId"]}")));
+                proxies.Map(
+                    "api/comments/contextandargstotask/{postId}",
+                    proxy =>
+                        proxy.UseHttp(
+                            (_, args) =>
+                                new ValueTask<string>(
+                                    $"https://jsonplaceholder.typicode.com/comments/{args["postId"]}"
+                                )
+                        )
+                );
 
-                proxies.Map("api/comments/contextandargstostring/{postId}", proxy => proxy.UseHttp((_, args) => $"https://jsonplaceholder.typicode.com/comments/{args["postId"]}"));
+                proxies.Map(
+                    "api/comments/contextandargstostring/{postId}",
+                    proxy =>
+                        proxy.UseHttp(
+                            (_, args) =>
+                                $"https://jsonplaceholder.typicode.com/comments/{args["postId"]}"
+                        )
+                );
             });
         }
     }
@@ -45,7 +71,7 @@ namespace AspNetCore.Proxy.Tests
     public class FakeIpAddressMiddleware
     {
         private readonly RequestDelegate next;
-            private static readonly Random rand = new Random();
+        private static readonly Random rand = new Random();
 
         public FakeIpAddressMiddleware(RequestDelegate next)
         {
@@ -56,15 +82,19 @@ namespace AspNetCore.Proxy.Tests
         {
             var r = rand.NextDouble();
 
-            if(r < .33)
+            if (r < .33)
             {
                 httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.168.1.31");
                 httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.168.1.32");
             }
             else if (r < .66)
             {
-                httpContext.Connection.RemoteIpAddress = IPAddress.Parse("2001:db8:85a3:8d3:1319:8a2e:370:7348");
-                httpContext.Connection.LocalIpAddress = IPAddress.Parse("2001:db8:85a3:8d3:1319:8a2e:370:7349");
+                httpContext.Connection.RemoteIpAddress = IPAddress.Parse(
+                    "2001:db8:85a3:8d3:1319:8a2e:370:7348"
+                );
+                httpContext.Connection.LocalIpAddress = IPAddress.Parse(
+                    "2001:db8:85a3:8d3:1319:8a2e:370:7349"
+                );
             }
 
             await this.next(httpContext);
@@ -100,7 +130,8 @@ namespace AspNetCore.Proxy.Tests
         [Route("api/controller/intercept/{postId}")]
         public Task GetWithIntercept(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
+            var options = HttpProxyOptionsBuilder
+                .Instance
                 .WithIntercept(async c =>
                 {
                     c.Response.StatusCode = 200;
@@ -110,53 +141,73 @@ namespace AspNetCore.Proxy.Tests
                 })
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/customrequest/{postId}")]
         public Task GetWithCustomRequest(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
-                .WithBeforeSend((_, hrm) =>
-                {
-                    hrm.RequestUri = new Uri("https://jsonplaceholder.typicode.com/posts/2");
-                    return Task.CompletedTask;
-                })
+            var options = HttpProxyOptionsBuilder
+                .Instance
+                .WithBeforeSend(
+                    (_, hrm) =>
+                    {
+                        hrm.RequestUri = new Uri("https://jsonplaceholder.typicode.com/posts/2");
+                        return Task.CompletedTask;
+                    }
+                )
                 .WithShouldAddForwardedHeaders(false)
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/customresponse/{postId}")]
         public Task GetWithCustomResponse(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
-                .WithAfterReceive((_, hrm) =>
-                {
-                    var newContent = new StringContent("It's all greek...er, Latin...to me!");
-                    hrm.Content = newContent;
-                    return Task.CompletedTask;
-                })
+            var options = HttpProxyOptionsBuilder
+                .Instance
+                .WithAfterReceive(
+                    (_, hrm) =>
+                    {
+                        var newContent = new StringContent("It's all greek...er, Latin...to me!");
+                        hrm.Content = newContent;
+                        return Task.CompletedTask;
+                    }
+                )
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/timeoutclient/{postId}")]
         public Task GetWithTimeoutClient(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
+            var options = HttpProxyOptionsBuilder
+                .Instance
                 .WithHttpClientName("TimeoutClient")
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/baseaddressclient/{postId}")]
         public Task GetWithBaseAddressClient(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
+            var options = HttpProxyOptionsBuilder
+                .Instance
                 .WithHttpClientName("BaseAddressClient")
                 .Build();
 
@@ -166,55 +217,77 @@ namespace AspNetCore.Proxy.Tests
         [Route("api/controller/badresponse/{postId}")]
         public Task GetWithBadResponse(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
-                .WithAfterReceive((_, hrm) =>
-                {
-                    if(hrm.StatusCode == HttpStatusCode.NotFound)
+            var options = HttpProxyOptionsBuilder
+                .Instance
+                .WithAfterReceive(
+                    (_, hrm) =>
                     {
-                        var newContent = new StringContent("I tried to proxy, but I chose a bad address, and it is not found.");
-                        hrm.Content = newContent;
-                    }
+                        if (hrm.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            var newContent = new StringContent(
+                                "I tried to proxy, but I chose a bad address, and it is not found."
+                            );
+                            hrm.Content = newContent;
+                        }
 
-                    return Task.CompletedTask;
-                })
+                        return Task.CompletedTask;
+                    }
+                )
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/badpath/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/badpath/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/fail/{postId}")]
         public Task GetWithGenericFail(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
-                .WithBeforeSend((_, hrm) =>
-                {
-                    var a = 0;
-                    var b = 1 / a;
-                    return Task.CompletedTask;
-                })
+            var options = HttpProxyOptionsBuilder
+                .Instance
+                .WithBeforeSend(
+                    (_, hrm) =>
+                    {
+                        var a = 0;
+                        var b = 1 / a;
+                        return Task.CompletedTask;
+                    }
+                )
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
 
         [Route("api/controller/customfail/{postId}")]
         public Task GetWithCustomFail(int postId)
         {
-            var options = HttpProxyOptionsBuilder.Instance
-                .WithBeforeSend((_, hrm) =>
-                {
-                    var a = 0;
-                    var b = 1 / a;
-                    return Task.CompletedTask;
-                })
-                .WithHandleFailure((c, e) =>
-                {
-                    c.Response.StatusCode = 403;
-                    return c.Response.WriteAsync("Things borked.");
-                })
+            var options = HttpProxyOptionsBuilder
+                .Instance
+                .WithBeforeSend(
+                    (_, hrm) =>
+                    {
+                        var a = 0;
+                        var b = 1 / a;
+                        return Task.CompletedTask;
+                    }
+                )
+                .WithHandleFailure(
+                    (c, e) =>
+                    {
+                        c.Response.StatusCode = 403;
+                        return c.Response.WriteAsync("Things borked.");
+                    }
+                )
                 .Build();
 
-            return this.HttpProxyAsync($"https://jsonplaceholder.typicode.com/posts/{postId}", options);
+            return this.HttpProxyAsync(
+                $"https://jsonplaceholder.typicode.com/posts/{postId}",
+                options
+            );
         }
     }
 }

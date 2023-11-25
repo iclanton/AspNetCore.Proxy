@@ -46,7 +46,10 @@ namespace AspNetCore.Proxy.Tests
             var send2 = "TEST2";
             var expected2 = $"[{send2}]";
 
-            await _wsClient.ConnectAsync(new Uri("ws://localhost:5003/to/random/path"), CancellationToken.None);
+            await _wsClient.ConnectAsync(
+                new Uri("ws://localhost:5003/to/random/path"),
+                CancellationToken.None
+            );
             Assert.Equal(Extensions.SupportedProtocol, _wsClient.SubProtocol);
 
             // Send a message.
@@ -61,15 +64,25 @@ namespace AspNetCore.Proxy.Tests
             Assert.Equal(expected2, response2);
 
             // Receive close.
-            var result = await _wsClient.ReceiveAsync(new ArraySegment<byte>(new byte[4096]), CancellationToken.None);
+            var result = await _wsClient.ReceiveAsync(
+                new ArraySegment<byte>(new byte[4096]),
+                CancellationToken.None
+            );
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
             Assert.Equal(Extensions.CloseDescription, result.CloseStatusDescription);
 
-            await _wsClient.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, Extensions.CloseDescription, CancellationToken.None);
+            await _wsClient.CloseOutputAsync(
+                WebSocketCloseStatus.NormalClosure,
+                Extensions.CloseDescription,
+                CancellationToken.None
+            );
 
             // HTTP test.
-            var response = await _httpClient.PostAsync("http://localhost:5003/at/some/path", new StringContent(send1));
+            var response = await _httpClient.PostAsync(
+                "http://localhost:5003/at/some/path",
+                new StringContent(send1)
+            );
             Assert.EndsWith(expected1, await response.Content.ReadAsStringAsync());
         }
 
@@ -79,7 +92,10 @@ namespace AspNetCore.Proxy.Tests
             var send1 = "TEST1";
             var expected1 = $"[{send1}]";
 
-            var response = await _httpClient.PostAsync("http://localhost:5007/at/some/other/path", new StringContent(send1));
+            var response = await _httpClient.PostAsync(
+                "http://localhost:5007/at/some/other/path",
+                new StringContent(send1)
+            );
             Assert.EndsWith(expected1, await response.Content.ReadAsStringAsync());
         }
 
@@ -87,18 +103,29 @@ namespace AspNetCore.Proxy.Tests
         public async Task CanAppendQueryParameters()
         {
             var send1 = "TESTWITHQUERY";
-            var expected1 = $"(http://localhost:5004/at/some/other/path?with=query&parameters=true)[{send1}]";
+            var expected1 =
+                $"(http://localhost:5004/at/some/other/path?with=query&parameters=true)[{send1}]";
 
-            var response = await _httpClient.PostAsync("http://localhost:5007/at/some/other/path?with=query&parameters=true", new StringContent(send1));
+            var response = await _httpClient.PostAsync(
+                "http://localhost:5007/at/some/other/path?with=query&parameters=true",
+                new StringContent(send1)
+            );
             Assert.Equal(expected1, await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
         public async Task CanFailWhenWebSocketNotDefined()
         {
-            var message = "The server returned status code '502' when status code '101' was expected.";
+            var message =
+                "The server returned status code '502' when status code '101' was expected.";
 
-            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(() => _wsClient.ConnectAsync(new Uri("ws://localhost:5007/to/random/path"), CancellationToken.None));
+            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(
+                () =>
+                    _wsClient.ConnectAsync(
+                        new Uri("ws://localhost:5007/to/random/path"),
+                        CancellationToken.None
+                    )
+            );
 
             Assert.Equal(message, exception.Message);
         }
@@ -113,7 +140,13 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public async Task CanFailOnIncorrectForwardToHttp()
         {
-            await Assert.ThrowsAnyAsync<WebSocketException>(async () => await _wsClient.ConnectAsync(new Uri("ws://localhost:5003/should/forward/to/http"), CancellationToken.None));
+            await Assert.ThrowsAnyAsync<WebSocketException>(
+                async () =>
+                    await _wsClient.ConnectAsync(
+                        new Uri("ws://localhost:5003/should/forward/to/http"),
+                        CancellationToken.None
+                    )
+            );
         }
     }
 }

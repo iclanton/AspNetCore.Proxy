@@ -17,7 +17,10 @@ namespace AspNetCore.Proxy
     /// <param name="context">The HTTP context of the current request at runtime.</param>
     /// <param name="arguments">The arguments of the current request at runtime.</param>
     /// <returns>The endpoint string.</returns>
-    public delegate string EndpointComputerToString(HttpContext context, IDictionary<string, object> arguments);
+    public delegate string EndpointComputerToString(
+        HttpContext context,
+        IDictionary<string, object> arguments
+    );
 
     /// <summary>
     /// The delegate type for computing an endpoint from a context and set of arguments.
@@ -26,14 +29,18 @@ namespace AspNetCore.Proxy
     /// <param name="context">The HTTP context of the current request at runtime.</param>
     /// <param name="arguments">The arguments of the current request at runtime.  This may be `null`, if the route data is missing.</param>
     /// <returns>The endpoint string as a <see cref="ValueTask{String}"/>.</returns>
-    public delegate ValueTask<string> EndpointComputerToValueTask(HttpContext context, IDictionary<string, object> arguments);
+    public delegate ValueTask<string> EndpointComputerToValueTask(
+        HttpContext context,
+        IDictionary<string, object> arguments
+    );
 
     /// <summary>
     /// Interface for a builder.
     /// </summary>
     /// <typeparam name="TInterface">The interface type of the builder.</typeparam>
     /// <typeparam name="TConcrete">The concrete type that the builder creates upon being built.</typeparam>
-    public interface IBuilder<TInterface, TConcrete> where TConcrete : class
+    public interface IBuilder<TInterface, TConcrete>
+        where TConcrete : class
     {
         /// <summary>
         /// Gets a 'new` instance initialized from `this` instance.
@@ -52,7 +59,8 @@ namespace AspNetCore.Proxy
     internal static class Helpers
     {
         internal static readonly string HttpProxyClientName = "AspNetCore.Proxy.HttpProxyClient";
-        internal static readonly string[] WebSocketNotForwardedHeaders = new[] {
+        internal static readonly string[] WebSocketNotForwardedHeaders = new[]
+        {
             "Connection",
             "Host",
             "Upgrade",
@@ -68,15 +76,15 @@ namespace AspNetCore.Proxy
 
         internal static string TrimTrailingSlashes(this string s)
         {
-            if(!s.EndsWith("/"))
+            if (!s.EndsWith("/"))
                 return s;
 
             var span = s.AsSpan();
             var count = 0;
 
-            for(int k = span.Length - 1; k >= 0; k--)
+            for (int k = span.Length - 1; k >= 0; k--)
             {
-                if(s[k] == '/')
+                if (s[k] == '/')
                     count++;
                 else
                     break;
@@ -85,7 +93,10 @@ namespace AspNetCore.Proxy
             return s.Substring(0, s.Length - count);
         }
 
-        internal static HttpContent ToHttpContent(this IFormCollection collection, HttpRequest request)
+        internal static HttpContent ToHttpContent(
+            this IFormCollection collection,
+            HttpRequest request
+        )
         {
             // @PreferLinux:
             // Form content types resource: https://stackoverflow.com/questions/4526273/what-does-enctype-multipart-form-data-mean/28380690
@@ -99,16 +110,38 @@ namespace AspNetCore.Proxy
 
             var contentType = MediaTypeHeaderValue.Parse(request.ContentType);
 
-            if (contentType.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)) // specification: https://url.spec.whatwg.org/#concept-urlencoded
-                return new FormUrlEncodedContent(collection.SelectMany(formItemList => formItemList.Value.Select(value => new KeyValuePair<string, string>(formItemList.Key, value))));
+            if (
+                contentType
+                    .MediaType
+                    .Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
+            ) // specification: https://url.spec.whatwg.org/#concept-urlencoded
+                return new FormUrlEncodedContent(
+                    collection.SelectMany(
+                        formItemList =>
+                            formItemList
+                                .Value
+                                .Select(
+                                    value =>
+                                        new KeyValuePair<string, string>(formItemList.Key, value)
+                                )
+                    )
+                );
 
-            if (!contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase))
+            if (
+                !contentType
+                    .MediaType
+                    .Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase)
+            )
                 throw new Exception($"Unknown form content type `{contentType.MediaType}`.");
 
             // multipart/form-data specification https://tools.ietf.org/html/rfc7578
             // It has each value separated by a boundary sequence, which is specified in the Content-Type header.
             // As a proxy it is probably best to reuse the boundary used in the original request as it is not necessarily random.
-            var delimiter = contentType.Parameters.Single(p => p.Name.Equals("boundary", StringComparison.OrdinalIgnoreCase)).Value.Trim('"');
+            var delimiter = contentType
+                .Parameters
+                .Single(p => p.Name.Equals("boundary", StringComparison.OrdinalIgnoreCase))
+                .Value
+                .Trim('"');
 
             var multipart = new MultipartFormDataContent(delimiter);
             foreach (var formVal in collection)
@@ -119,13 +152,31 @@ namespace AspNetCore.Proxy
             foreach (var file in collection.Files)
             {
                 var content = new StreamContent(file.OpenReadStream());
-                foreach (var header in file.Headers.Where(h => !h.Key.Equals("Content-Disposition", StringComparison.OrdinalIgnoreCase)))
-                    content.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
+                foreach (
+                    var header in file.Headers.Where(
+                        h =>
+                            !h.Key.Equals("Content-Disposition", StringComparison.OrdinalIgnoreCase)
+                    )
+                )
+                    content
+                        .Headers
+                        .TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
 
                 // Force content-disposition header to use raw string to ensure UTF-8 is well encoded.
-                content.Headers.TryAddWithoutValidation("Content-Disposition",
-                    new string(Encoding.UTF8.GetBytes($"form-data; name=\"{file.Name}\"; filename=\"{file.FileName}\"").
-                    Select(b => (char)b).ToArray()));
+                content
+                    .Headers
+                    .TryAddWithoutValidation(
+                        "Content-Disposition",
+                        new string(
+                            Encoding
+                                .UTF8
+                                .GetBytes(
+                                    $"form-data; name=\"{file.Name}\"; filename=\"{file.FileName}\""
+                                )
+                                .Select(b => (char)b)
+                                .ToArray()
+                        )
+                    );
 
                 multipart.Add(content);
             }

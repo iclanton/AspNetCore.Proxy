@@ -56,7 +56,7 @@ namespace AspNetCore.Proxy.Builders
         {
             var instance = Instance;
 
-            foreach(var proxyBuilder in _proxyBuilders)
+            foreach (var proxyBuilder in _proxyBuilders)
                 instance.Map(proxyBuilder.New());
 
             return instance;
@@ -69,12 +69,13 @@ namespace AspNetCore.Proxy.Builders
         }
 
         /// <inheritdoc/>
-        public IProxiesBuilder Map(string route, Action<IProxyBuilder> builderAction) => this.Map(proxy => builderAction(proxy.WithRoute(route)));
+        public IProxiesBuilder Map(string route, Action<IProxyBuilder> builderAction) =>
+            this.Map(proxy => builderAction(proxy.WithRoute(route)));
 
         /// <inheritdoc/>
         public IProxiesBuilder Map(Action<IProxyBuilder> builderAction)
         {
-            if(builderAction == null)
+            if (builderAction == null)
                 throw new ArgumentException($"{nameof(builderAction)} must not be `null`.");
 
             var builder = ProxyBuilder.Instance;
@@ -86,7 +87,7 @@ namespace AspNetCore.Proxy.Builders
         /// <inheritdoc/>
         public IProxiesBuilder Map(IProxyBuilder builder)
         {
-            if(builder == null)
+            if (builder == null)
                 throw new ArgumentException($"{nameof(builder)} must not be `null`.");
 
             _proxyBuilders.Add(builder);
@@ -112,6 +113,7 @@ namespace AspNetCore.Proxy.Builders
 
         /// <inheritdoc/>
         public IEnumerator<Proxy> GetEnumerator() => _proxies.GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
 }

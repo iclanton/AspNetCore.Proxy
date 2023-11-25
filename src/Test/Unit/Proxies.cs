@@ -14,11 +14,13 @@ namespace AspNetCore.Proxy.Tests
         {
             const string route = "from";
             const string endpoint = "to";
-            var proxies = ProxiesBuilder.Instance.Map(route, b => b.UseHttp(endpoint)).New().Build() as IEnumerable;
+            var proxies =
+                ProxiesBuilder.Instance.Map(route, b => b.UseHttp(endpoint)).New().Build()
+                as IEnumerable;
 
             // Some of this is to exercise the enumerator.
             List<Builders.Proxy> newProxies = new List<Builders.Proxy>();
-            foreach(var o in proxies)
+            foreach (var o in proxies)
                 newProxies.Add(o as Builders.Proxy);
 
             Assert.Single(newProxies);
@@ -31,7 +33,9 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public void CanProxiesBuilderFailWithNullProxyBuilder()
         {
-            Assert.ThrowsAny<Exception>(() => ProxiesBuilder.Instance.Map(null as Action<IProxyBuilder>));
+            Assert.ThrowsAny<Exception>(
+                () => ProxiesBuilder.Instance.Map(null as Action<IProxyBuilder>)
+            );
 
             Assert.ThrowsAny<Exception>(() => ProxiesBuilder.Instance.Map(null as IProxyBuilder));
         }

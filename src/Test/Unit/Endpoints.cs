@@ -14,7 +14,7 @@ namespace AspNetCore.Proxy.Tests
             var servers = new List<string> { "1", "2", "3", "4", "5" };
             var roundRobin = RoundRobin.Of(servers.ToArray());
 
-            for(int k = 0; k < testRounds; k++)
+            for (int k = 0; k < testRounds; k++)
             {
                 var result = roundRobin(null, null);
                 Assert.Equal(servers[k % servers.Count], result);

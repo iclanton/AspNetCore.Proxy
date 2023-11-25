@@ -16,7 +16,7 @@ namespace AspNetCore.Proxy.Endpoints
 
             return (context, args) =>
             {
-                if(position == endpoints.Length)
+                if (position == endpoints.Length)
                     position = 0;
 
                 return endpoints[position++];

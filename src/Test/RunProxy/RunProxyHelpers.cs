@@ -11,20 +11,27 @@ namespace AspNetCore.Proxy.Tests
     {
         internal static Task RunProxyServers(CancellationToken token)
         {
-            var proxiedServerTask = WebHost.CreateDefaultBuilder()
+            var proxiedServerTask = WebHost
+                .CreateDefaultBuilder()
                 .SuppressStatusMessages(true)
                 .ConfigureLogging(logging => logging.ClearProviders())
                 .ConfigureKestrel(options => options.ListenLocalhost(5004))
-                .Configure(app => app.UseWebSockets().Run(context =>
-                {
-                    if(context.WebSockets.IsWebSocketRequest)
-                        return context.SocketBoomerang();
+                .Configure(
+                    app =>
+                        app.UseWebSockets()
+                            .Run(context =>
+                            {
+                                if (context.WebSockets.IsWebSocketRequest)
+                                    return context.SocketBoomerang();
 
-                    return context.HttpBoomerang();
-                }))
-                .Build().RunAsync(token);
+                                return context.HttpBoomerang();
+                            })
+                )
+                .Build()
+                .RunAsync(token);
 
-            var proxyServerTask = WebHost.CreateDefaultBuilder()
+            var proxyServerTask = WebHost
+                .CreateDefaultBuilder()
                 .SuppressStatusMessages(true)
                 .ConfigureLogging(logging => logging.ClearProviders())
                 .ConfigureKestrel(options => options.ListenLocalhost(5003))
@@ -39,25 +46,44 @@ namespace AspNetCore.Proxy.Tests
                 {
                     app.UseWebSockets();
 
-                    app.RunProxy(proxy => proxy
-                        .UseHttp((context, args) =>
-                        {
-                            if(context.Request.Path.StartsWithSegments("/should/forward/to/ws"))
-                                return "ws://localhost:5004";
+                    app.RunProxy(
+                        proxy =>
+                            proxy
+                                .UseHttp(
+                                    (context, args) =>
+                                    {
+                                        if (
+                                            context
+                                                .Request
+                                                .Path
+                                                .StartsWithSegments("/should/forward/to/ws")
+                                        )
+                                            return "ws://localhost:5004";
 
-                            return "http://localhost:5004";
-                        })
-                        .UseWs((context, args) =>
-                        {
-                            if(context.Request.Path.StartsWithSegments("/should/forward/to/http"))
-                                return "http://localhost:5004";
+                                        return "http://localhost:5004";
+                                    }
+                                )
+                                .UseWs(
+                                    (context, args) =>
+                                    {
+                                        if (
+                                            context
+                                                .Request
+                                                .Path
+                                                .StartsWithSegments("/should/forward/to/http")
+                                        )
+                                            return "http://localhost:5004";
 
-                            return "ws://localhost:5004";
-                        }));
+                                        return "ws://localhost:5004";
+                                    }
+                                )
+                    );
                 })
-                .Build().RunAsync(token);
+                .Build()
+                .RunAsync(token);
 
-            var proxyServerTask2 = WebHost.CreateDefaultBuilder()
+            var proxyServerTask2 = WebHost
+                .CreateDefaultBuilder()
                 .SuppressStatusMessages(true)
                 .ConfigureLogging(logging => logging.ClearProviders())
                 .ConfigureKestrel(options => options.ListenLocalhost(5007))
@@ -67,7 +93,8 @@ namespace AspNetCore.Proxy.Tests
                     app.UseWebSockets();
                     app.RunProxy(proxy => proxy.UseHttp("http://localhost:5004"));
                 })
-                .Build().RunAsync(token);
+                .Build()
+                .RunAsync(token);
 
             return Task.WhenAll(proxiedServerTask, proxyServerTask, proxyServerTask2);
         }

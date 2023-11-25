@@ -32,7 +32,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="beforeConnect"></param>
         /// <returns>This instance.</returns>
-        IWsProxyOptionsBuilder WithBeforeConnect(Func<HttpContext, ClientWebSocketOptions, Task> beforeConnect);
+        IWsProxyOptionsBuilder WithBeforeConnect(
+            Func<HttpContext, ClientWebSocketOptions, Task> beforeConnect
+        );
 
         /// <summary>
         /// A <see cref="Func{HttpContext, Exception, Task}"/> that is invoked once if the proxy operation fails.
@@ -55,9 +57,7 @@ namespace AspNetCore.Proxy.Options
         /// <summary>
         /// The default constructor.
         /// </summary>
-        private WsProxyOptionsBuilder()
-        {
-        }
+        private WsProxyOptionsBuilder() { }
 
         /// <summary>
         /// Gets a `new`, empty instance of this type.
@@ -78,11 +78,7 @@ namespace AspNetCore.Proxy.Options
         /// <inheritdoc/>
         public WsProxyOptions Build()
         {
-            return new WsProxyOptions(
-                _bufferSize,
-                _intercept,
-                _beforeConnect,
-                _handleFailure);
+            return new WsProxyOptions(_bufferSize, _intercept, _beforeConnect, _handleFailure);
         }
 
         /// <summary>
@@ -114,19 +110,23 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="beforeConnect"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IWsProxyOptionsBuilder WithBeforeConnect(Func<HttpContext, ClientWebSocketOptions, Task> beforeConnect)
+        public IWsProxyOptionsBuilder WithBeforeConnect(
+            Func<HttpContext, ClientWebSocketOptions, Task> beforeConnect
+        )
         {
             _beforeConnect = beforeConnect;
             return this;
         }
 
         /// <summary>
-        /// 
+        ///
         /// Sets the <see cref="Func{HttpContext, Exception, Task}"/> that is invoked once if the proxy operation fails.
         /// </summary>
         /// <param name="handleFailure"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IWsProxyOptionsBuilder WithHandleFailure(Func<HttpContext, Exception, Task> handleFailure)
+        public IWsProxyOptionsBuilder WithHandleFailure(
+            Func<HttpContext, Exception, Task> handleFailure
+        )
         {
             _handleFailure = handleFailure;
             return this;
@@ -176,7 +176,8 @@ namespace AspNetCore.Proxy.Options
             int bufferSize,
             Func<HttpContext, ValueTask<bool>> intercept,
             Func<HttpContext, ClientWebSocketOptions, Task> beforeConnect,
-            Func<HttpContext, Exception, Task> handleFailure)
+            Func<HttpContext, Exception, Task> handleFailure
+        )
         {
             BufferSize = bufferSize;
             Intercept = intercept;

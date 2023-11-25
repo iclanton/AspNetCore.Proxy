@@ -40,7 +40,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="beforeSend"></param>
         /// <returns>This instance.</returns>
-        IHttpProxyOptionsBuilder WithBeforeSend(Func<HttpContext, HttpRequestMessage, Task> beforeSend);
+        IHttpProxyOptionsBuilder WithBeforeSend(
+            Func<HttpContext, HttpRequestMessage, Task> beforeSend
+        );
 
         /// <summary>
         /// An <see cref="Func{HttpContext, HttpResponseMessage, Task}"/> that is invoked before the response is written to the client.
@@ -48,14 +50,18 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="afterReceive"></param>
         /// <returns>This instance.</returns>
-        IHttpProxyOptionsBuilder WithAfterReceive(Func<HttpContext, HttpResponseMessage, Task> afterReceive);
+        IHttpProxyOptionsBuilder WithAfterReceive(
+            Func<HttpContext, HttpResponseMessage, Task> afterReceive
+        );
 
         /// <summary>
         /// A <see cref="Func{HttpContext, Exception, Task}"/> that is invoked once if the proxy operation fails.
         /// </summary>
         /// <param name="handleFailure"></param>
         /// <returns>This instance.</returns>
-        IHttpProxyOptionsBuilder WithHandleFailure(Func<HttpContext, Exception, Task> handleFailure);
+        IHttpProxyOptionsBuilder WithHandleFailure(
+            Func<HttpContext, Exception, Task> handleFailure
+        );
     }
 
     /// <summary>
@@ -73,9 +79,7 @@ namespace AspNetCore.Proxy.Options
         /// <summary>
         /// The default constructor.
         /// </summary>
-        private HttpProxyOptionsBuilder()
-        {
-        }
+        private HttpProxyOptionsBuilder() { }
 
         /// <summary>
         /// Gets a `new`, empty instance of this type.
@@ -104,7 +108,8 @@ namespace AspNetCore.Proxy.Options
                 _handleFailure,
                 _intercept,
                 _beforeSend,
-                _afterReceive);
+                _afterReceive
+            );
         }
 
         /// <summary>
@@ -113,7 +118,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="shouldAddForwardedHeaders"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IHttpProxyOptionsBuilder WithShouldAddForwardedHeaders(bool shouldAddForwardedHeaders)
+        public IHttpProxyOptionsBuilder WithShouldAddForwardedHeaders(
+            bool shouldAddForwardedHeaders
+        )
         {
             _shouldAddForwardedHeaders = shouldAddForwardedHeaders;
             return this;
@@ -149,7 +156,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="beforeSend"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IHttpProxyOptionsBuilder WithBeforeSend(Func<HttpContext, HttpRequestMessage, Task> beforeSend)
+        public IHttpProxyOptionsBuilder WithBeforeSend(
+            Func<HttpContext, HttpRequestMessage, Task> beforeSend
+        )
         {
             _beforeSend = beforeSend;
             return this;
@@ -161,7 +170,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="afterReceive"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IHttpProxyOptionsBuilder WithAfterReceive(Func<HttpContext, HttpResponseMessage, Task> afterReceive)
+        public IHttpProxyOptionsBuilder WithAfterReceive(
+            Func<HttpContext, HttpResponseMessage, Task> afterReceive
+        )
         {
             _afterReceive = afterReceive;
             return this;
@@ -172,7 +183,9 @@ namespace AspNetCore.Proxy.Options
         /// </summary>
         /// <param name="handleFailure"></param>
         /// <returns>The current instance with the specified option set.</returns>
-        public IHttpProxyOptionsBuilder WithHandleFailure(Func<HttpContext, Exception, Task> handleFailure)
+        public IHttpProxyOptionsBuilder WithHandleFailure(
+            Func<HttpContext, Exception, Task> handleFailure
+        )
         {
             _handleFailure = handleFailure;
             return this;
@@ -241,7 +254,8 @@ namespace AspNetCore.Proxy.Options
             Func<HttpContext, Exception, Task> handleFailure,
             Func<HttpContext, ValueTask<bool>> intercept,
             Func<HttpContext, HttpRequestMessage, Task> beforeSend,
-            Func<HttpContext, HttpResponseMessage, Task> afterReceive)
+            Func<HttpContext, HttpResponseMessage, Task> afterReceive
+        )
         {
             ShouldAddForwardedHeaders = shouldAddForwardedHeaders;
             HttpClientName = httpClientName;

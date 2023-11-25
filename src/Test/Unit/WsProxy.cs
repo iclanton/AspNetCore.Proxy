@@ -17,14 +17,16 @@ namespace AspNetCore.Proxy.Tests
             var wsProxyOptions = WsProxyOptionsBuilder.Instance.WithBufferSize(bufferSize).New();
 
             // Exercise methods by calling them multiple times.
-            var wsProxy = WsProxyBuilder.Instance
+            var wsProxy = WsProxyBuilder
+                .Instance
                 .New()
                 .WithEndpoint(endpoint)
                 .WithOptions(null as Action<IWsProxyOptionsBuilder>)
                 .WithOptions(null as IWsProxyOptionsBuilder)
                 .WithOptions(b => b.New())
                 .WithOptions(wsProxyOptions)
-                .New().Build();
+                .New()
+                .Build();
 
             Assert.Equal(endpoint, await wsProxy.EndpointComputer.Invoke(null, null));
             Assert.Equal(52978, wsProxy.Options.BufferSize);
@@ -33,7 +35,8 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public void CanWsProxyBuilderFailOnNullEndpointComputer()
         {
-            Assert.ThrowsAny<Exception>(() => {
+            Assert.ThrowsAny<Exception>(() =>
+            {
                 var wsProxy = WsProxyBuilder.Instance.Build();
             });
         }

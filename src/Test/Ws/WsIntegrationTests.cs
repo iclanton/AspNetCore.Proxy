@@ -62,12 +62,19 @@ namespace AspNetCore.Proxy.Tests
             Assert.Equal(expected2, response2);
 
             // Receive close.
-            var result = await _client.ReceiveAsync(new ArraySegment<byte>(new byte[4096]), CancellationToken.None);
+            var result = await _client.ReceiveAsync(
+                new ArraySegment<byte>(new byte[4096]),
+                CancellationToken.None
+            );
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
             Assert.Equal(Extensions.CloseDescription, result.CloseStatusDescription);
 
-            await _client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, Extensions.CloseDescription, CancellationToken.None);
+            await _client.CloseOutputAsync(
+                WebSocketCloseStatus.NormalClosure,
+                Extensions.CloseDescription,
+                CancellationToken.None
+            );
         }
 
         [Theory]
@@ -97,12 +104,19 @@ namespace AspNetCore.Proxy.Tests
             Assert.Equal(expected2, response2);
 
             // Receive close.
-            var result = await _client.ReceiveAsync(new ArraySegment<byte>(new byte[4096]), CancellationToken.None);
+            var result = await _client.ReceiveAsync(
+                new ArraySegment<byte>(new byte[4096]),
+                CancellationToken.None
+            );
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketCloseStatus.NormalClosure, result.CloseStatus);
             Assert.Equal(Extensions.CloseDescription, result.CloseStatusDescription);
 
-            await _client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, Extensions.CloseDescription, CancellationToken.None);
+            await _client.CloseOutputAsync(
+                WebSocketCloseStatus.NormalClosure,
+                Extensions.CloseDescription,
+                CancellationToken.None
+            );
         }
 
         [Fact]
@@ -116,22 +130,32 @@ namespace AspNetCore.Proxy.Tests
             await _client.SendShortMessageAsync(send1);
 
             // Receive failed close.
-            var result = await _client.ReceiveAsync(new ArraySegment<byte>(new byte[4096]), CancellationToken.None);
+            var result = await _client.ReceiveAsync(
+                new ArraySegment<byte>(new byte[4096]),
+                CancellationToken.None
+            );
             Assert.Equal(WebSocketMessageType.Close, result.MessageType);
             Assert.Equal(WebSocketCloseStatus.EndpointUnavailable, result.CloseStatus);
 
-            await _client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, Extensions.CloseDescription, CancellationToken.None);
+            await _client.CloseOutputAsync(
+                WebSocketCloseStatus.NormalClosure,
+                Extensions.CloseDescription,
+                CancellationToken.None
+            );
         }
 
         [Fact]
         public async Task CanIntercept()
         {
-            const string message = "The server returned status code '200' when status code '101' was expected.";
+            const string message =
+                "The server returned status code '200' when status code '101' was expected.";
 
             var client = new ClientWebSocket();
             client.Options.AddSubProtocol("interceptedProtocol");
 
-            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(() => client.ConnectAsync(new Uri("ws://localhost:5001/ws"), CancellationToken.None));
+            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(
+                () => client.ConnectAsync(new Uri("ws://localhost:5001/ws"), CancellationToken.None)
+            );
 
             Assert.Equal(message, exception.Message);
         }
@@ -141,11 +165,14 @@ namespace AspNetCore.Proxy.Tests
         {
             // Because there is no protocol attached, the `BeforeConnect` uses a bad endpoint protocol.
             // This causes a failure, and that failure is intercepted by `HandleFailure`.
-            var message = "The server returned status code '599' when status code '101' was expected.";
+            var message =
+                "The server returned status code '599' when status code '101' was expected.";
 
             var client = new ClientWebSocket();
 
-            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(() => client.ConnectAsync(new Uri("ws://localhost:5001/ws"), CancellationToken.None));
+            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(
+                () => client.ConnectAsync(new Uri("ws://localhost:5001/ws"), CancellationToken.None)
+            );
 
             Assert.Equal(message, exception.Message);
         }
@@ -153,11 +180,18 @@ namespace AspNetCore.Proxy.Tests
         [Fact]
         public async Task CanFailWhenWsRequestIsToHttpProxy()
         {
-            const string message = "The server returned status code '502' when status code '101' was expected.";
+            const string message =
+                "The server returned status code '502' when status code '101' was expected.";
 
             var client = new ClientWebSocket();
 
-            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(() => client.ConnectAsync(new Uri("ws://localhost:5001/api/http"), CancellationToken.None));
+            var exception = await Assert.ThrowsAnyAsync<WebSocketException>(
+                () =>
+                    client.ConnectAsync(
+                        new Uri("ws://localhost:5001/api/http"),
+                        CancellationToken.None
+                    )
+            );
 
             Assert.Equal(message, exception.Message);
         }
